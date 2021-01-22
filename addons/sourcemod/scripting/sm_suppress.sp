@@ -33,7 +33,7 @@ public	void OnPluginStart()
 	SuppressNameChange	=	CreateConVar("sm_suppress_namechange",	"0",	"Block Player Name Change Message? \n0 = Allow Player Name Change Message \n1 = Block Player Name Change Message",																		_, true, 0.0, true, 1.0);
 	SuppressAchievement	=	CreateConVar("sm_suppress_achievement",	"0",	"Block Player Achievement Get Message? \n0 = Allow Player Achievement Get Message \n1 = Block Player Achievement Get Message",															_, true, 0.0, true, 1.0);
 	SuppressCvar		=	CreateConVar("sm_suppress_cvar",		"0",	"Block Cvar Has Changed To Message? \n0 = Allow Cvar Has Changed To Message \n1 = Block Cvar Has Changed To Message",																	_, true, 0.0, true, 1.0);
-	SuppressChat		=	CreateConVar("sm_suppress_chat",		"0",	"Block Player Chat Messages? \0 = Allow Chat Messages \n1 = Disable Public Chat \n2 = Disable Team Chat \n3 = Disable Public and Team Chat");
+	SuppressChat		=	CreateConVar("sm_suppress_chat",		"0",	"Block Player Chat Messages? \0 = Allow Chat Messages \n1 = Disable Public Chat \n2 = Disable Team Chat \n3 = Disable Public and Team Chat",											_, true, 0.0, true, 3.0);
 	HookUserMessage(GetUserMessageId("SayText2"), suppress_NameChange, true);
 	HookEvent("player_team",				suppress_Teams,			EventHookMode_Pre);
 	HookEvent("player_connect",				suppress_Connect,		EventHookMode_Pre);
