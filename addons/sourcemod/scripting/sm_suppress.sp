@@ -1,7 +1,8 @@
-#include	<sourcemod>
 #pragma		semicolon 1
 #pragma		newdecls required
-#define		PLUGIN_VERSION "0.5.0"
+
+#define		PLUGIN_VERSION "0.6.0"
+
 ConVar		SuppressTeams,
 			SuppressConnect,
 			SuppressDisconnect,
@@ -11,7 +12,8 @@ ConVar		SuppressTeams,
 			SuppressAnnotation,
 			SuppressNameChange,
 			SuppressVoiceSubTitles,
-			SuppressCvar;
+			SuppressCvar,
+			SuppressChat;
 
 public	Plugin myinfo	=	{
 	name		=	"[ANY] Suppress Manager",
@@ -31,6 +33,7 @@ public	void OnPluginStart()
 	SuppressNameChange	=	CreateConVar("sm_suppress_namechange",	"0",	"Block Player Name Change Message? \n0 = Allow Player Name Change Message \n1 = Block Player Name Change Message",																		_, true, 0.0, true, 1.0);
 	SuppressAchievement	=	CreateConVar("sm_suppress_achievement",	"0",	"Block Player Achievement Get Message? \n0 = Allow Player Achievement Get Message \n1 = Block Player Achievement Get Message",															_, true, 0.0, true, 1.0);
 	SuppressCvar		=	CreateConVar("sm_suppress_cvar",		"0",	"Block Cvar Has Changed To Message? \n0 = Allow Cvar Has Changed To Message \n1 = Block Cvar Has Changed To Message",																	_, true, 0.0, true, 1.0);
+	SuppressChat		=	CreateConVar("sm_suppress_chat",		"0",	"Block Player Chat Messages? \0 = Allow Chat Messages \n1 = Disable Public Chat \n2 = Disable Team Chat \n3 = Disable Public and Team Chat");
 	HookUserMessage(GetUserMessageId("SayText2"), suppress_NameChange, true);
 	HookEvent("player_team",				suppress_Teams,			EventHookMode_Pre);
 	HookEvent("player_connect",				suppress_Connect,		EventHookMode_Pre);
@@ -63,26 +66,27 @@ public	void OnPluginStart()
 			SuppressVoiceSubTitles	=	CreateConVar("sm_suppress_voicesubtitles",	"0",	"Block Player Voice Subtitles?",					_, true, 0.0, true, 1.0);
 		}
 	}
+	AddCommandListener(SuppressChatCallback,	"say");
+	AddCommandListener(SuppressChatCallback,	"say_team");
 	AutoExecConfig(true, "sm_suppress_manager");
 }
 
 //Cvar has changed to Event
-Action suppress_Cvar(Event event, const char[] name, bool dontBroadcast)	{
+Action	suppress_Cvar(Event event,	const char[] name,	bool dontBroadcast)	{
 	if (SuppressCvar.BoolValue) SetEventBroadcast(event, true);
 }
 //Player has joined team Event
-Action suppress_Teams(Event event, const char[] name, bool dontBroadcast)	{
+Action	suppress_Teams(Event event,	const char[] name,	bool dontBroadcast)	{
 	if (SuppressTeams.BoolValue) SetEventBroadcast(event, true);
 }
 //Connect Event
-Action suppress_Connect(Event event, const char[] name, bool dontBroadcast)
-{
+Action	suppress_Connect(Event event, const char[] name,	bool dontBroadcast)	{
 	if (SuppressConnect.IntValue == 1 || 
 	SuppressConnect.IntValue == 2 || 
 	SuppressConnect.IntValue == 3)
 		SetEventBroadcast(event, true);
 }
-public void OnClientAuthorized(int client)	{
+public	void	OnClientAuthorized(int client)	{
 	if(!IsValidClient(client))
 		return;
 	
@@ -93,8 +97,7 @@ public void OnClientAuthorized(int client)	{
 		PrintToChatAll("%N has joined the game", client);
 }
 //Disconnect Event
-Action suppress_Disconnect(Event event, const char[] name, bool dontBroadcast)
-{
+Action	suppress_Disconnect(Event event,	const char[] name,	bool dontBroadcast)	{
 	int		client	=	GetClientOfUserId(event.GetInt("userid"));
 	char	reason[1024];
 	GetEventString(event,	"reason",	reason,	sizeof(reason));
@@ -116,11 +119,11 @@ Action suppress_Disconnect(Event event, const char[] name, bool dontBroadcast)
 	return Plugin_Handled;
 }
 //Killfeed Event
-Action suppress_Killfeed(Event event, const char[] name, bool dontBroadcast)	{
+Action	suppress_Killfeed(Event event,	const char[] name,	bool dontBroadcast)	{
 	if (SuppressKillfeed.BoolValue)		SetEventBroadcast(event, true);
 }
 //Winpanel Event
-Action suppress_WinPanel(Event event, const char[] name, bool dontBroadcast)	{
+Action	suppress_WinPanel(Event event,	const char[] name,	bool dontBroadcast)	{
 	if (SuppressWinPanel.BoolValue)		SetEventBroadcast(event, true);
 }
 //Achievement get Event
@@ -128,12 +131,11 @@ Action suppress_Achievement(Event event, const char[] name, bool dontBroadcast)	
 	if (SuppressAchievement.BoolValue)	SetEventBroadcast(event, true);
 }
 //Annotation Event
-Action suppress_Annotation(Event event, const char[] name, bool dontBroadcast)	{
+Action suppress_Annotation(Event event,	const char[] name,	bool dontBroadcast)	{
 	if (SuppressAnnotation.BoolValue)	SetEventBroadcast(event, true);
 }
 //Voice subtitles Event || Credits Bacardi
-Action suppress_NameChange(UserMsg msg_id, Handle bf, players[], int playersNum, bool reliable, bool init)
-{
+Action	suppress_NameChange(UserMsg msg_id,	Handle bf, const players[],	int playersNum,	bool reliable,	bool init)	{
 	if (SuppressNameChange.BoolValue)
 	{
 		if(!reliable) return Plugin_Continue;
@@ -143,8 +145,7 @@ Action suppress_NameChange(UserMsg msg_id, Handle bf, players[], int playersNum,
 			PbReadString(bf, "msg_name", buffer, sizeof(buffer));
 			if(StrEqual(buffer, "#Cstrike_Name_Change")) return Plugin_Handled;	//CSGO
 		}
-		else
-		{
+		else	{
 			BfReadChar(bf);
 			BfReadChar(bf);
 			BfReadString(bf, buffer, sizeof(buffer));
@@ -156,26 +157,19 @@ Action suppress_NameChange(UserMsg msg_id, Handle bf, players[], int playersNum,
 	return Plugin_Continue;
 }
 //Name change Event || Credits GORRageBoy
-Action suppress_VoiceSubTitles(UserMsg msg_id, Handle bf, const players[], int playersNum, bool reliable, bool init)
-{
+Action	suppress_VoiceSubTitles(UserMsg msg_id,	Handle bf,	const players[],	int playersNum,	bool reliable,	bool init)	{
 	int		clientid	=	BfReadByte(bf),
 			voicemenu1	=	BfReadByte(bf),
 			voicemenu2	=	BfReadByte(bf);
-	if (SuppressVoiceSubTitles.BoolValue)
-	{
-		if (IsPlayerAlive(clientid) && IsClientInGame(clientid))
-		{	
-			if (voicemenu1 == 0)
-			{
-				switch (voicemenu2)
-				{
+	if (SuppressVoiceSubTitles.BoolValue)	{
+		if (IsPlayerAlive(clientid) && IsClientInGame(clientid))	{	
+			if (voicemenu1 == 0)	{
+				switch (voicemenu2)	{
 					case 0, 1, 2, 3 ,4 ,5 ,6 ,7: return Plugin_Handled;
 				}
 			}
-			if (voicemenu1 == 1)
-			{
-				switch (voicemenu2)
-				{
+			if (voicemenu1 == 1)	{
+				switch (voicemenu2)	{
 					case 0, 1, 2, 6: return Plugin_Handled;
 				}
 			}
@@ -184,6 +178,26 @@ Action suppress_VoiceSubTitles(UserMsg msg_id, Handle bf, const players[], int p
 		}
 	}
 	return Plugin_Continue;
+}
+
+Action	SuppressChatCallback(int client,	const char[] command,	int args)	{
+	if(StrEqual(command,	"say"))	{
+		switch(GetConVarInt(SuppressChat))	{
+			case	0:	return	Plugin_Continue;
+			case	1:	return	Plugin_Handled;
+			case	2:	return	Plugin_Continue;
+			case	3:	return	Plugin_Handled;
+		}
+	}
+	if(StrEqual(command,	"say_Team"))	{
+		switch(GetConVarInt(SuppressChat))	{
+			case	0:	return	Plugin_Continue;
+			case	1:	return	Plugin_Continue;
+			case	2:	return	Plugin_Handled;
+			case	3:	return	Plugin_Handled;
+		}
+	}
+	return	Plugin_Continue;
 }
 
 bool	IsValidClient(int	client)	{
