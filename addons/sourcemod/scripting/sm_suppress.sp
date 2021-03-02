@@ -1,7 +1,9 @@
-#pragma		semicolon 1
-#pragma		newdecls required
+#include	<suppress_manager>
 
-#define		PLUGIN_VERSION "0.6.1"
+#pragma		semicolon	1
+#pragma		newdecls	required
+
+#define		PLUGIN_VERSION "0.7.0"
 
 char		gamefolder[64];
 
@@ -17,6 +19,82 @@ ConVar		SuppressTeams,
 			SuppressCvar,
 			SuppressChat;
 
+public	APLRes	AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)	{
+	CreateNative("SuppressManager_IsTeamJoinMsgBlocked",		Native_IsTeamJoinMsgBlocked);
+	CreateNative("SuppressManager_IsConnectMsgBlocked",			Native_IsConnectMsgBlocked);
+	CreateNative("SuppressManager_IsDisconnectMsgBlocked",		Native_IsDisconnectMsgBlocked);
+	CreateNative("SuppressManager_IsKillfeedBlocked",			Native_IsKillfeedBlocked);
+	CreateNative("SuppressManager_TF2_IsWinpanelBlocked",		Native_TF2_IsWinpanelBlocked);
+	CreateNative("SuppressManager_IsAchievementsBlocked",		Native_IsAchievementsBlocked);
+	CreateNative("SuppressManager_TF2_IsAnnotationsBlocked",	Native_TF2_IsAnnotationsBlocked);
+	CreateNative("SuppressManager_IsNameChangeBlocked",			Native_IsNameChangeBlocked);
+	CreateNative("SuppressManager_TF2_IsVoiceSubTitlesBlocked",	Native_TF2_IsVoiceSubTitlesBlocked);
+	CreateNative("SuppressManager_IsServerCvarChangesBlocked",	Native_IsServerCvarChangesBlocked);
+	CreateNative("SuppressManager_IsChatMessagesBlocked",		Native_IsChatMessagesBlocked);
+	RegPluginLibrary("SuppressManager");
+	return	APLRes_Success;
+}
+
+int Native_IsTeamJoinMsgBlocked(Handle plugin, int params)	{
+	if(SuppressTeams.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_IsConnectMsgBlocked(Handle plugin, int params)	{
+	return	SuppressConnect.IntValue;
+}
+
+int Native_IsDisconnectMsgBlocked(Handle plugin, int params)	{
+	return	SuppressDisconnect.IntValue;
+}
+
+int Native_IsKillfeedBlocked(Handle plugin, int params)	{
+	if(SuppressKillfeed.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_TF2_IsWinpanelBlocked(Handle plugin, int params)	{
+	if(SuppressWinPanel.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_IsAchievementsBlocked(Handle plugin, int params)	{
+	if(SuppressAchievement.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_TF2_IsAnnotationsBlocked(Handle plugin, int params)	{
+	if(SuppressAnnotation.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_IsNameChangeBlocked(Handle plugin, int params)	{
+	if(SuppressNameChange.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_TF2_IsVoiceSubTitlesBlocked(Handle plugin, int params)	{
+	if(SuppressVoiceSubTitles.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_IsServerCvarChangesBlocked(Handle plugin, int params)	{
+	if(SuppressCvar.BoolValue)
+		return	true;
+	return	false;
+}
+
+int Native_IsChatMessagesBlocked(Handle plugin, int params)	{
+	return	SuppressChat.IntValue;
+}
+
 public	Plugin myinfo	=	{
 	name		=	"[ANY] Suppress Manager",
 	author		=	"Tk /id/Teamkiller324",
@@ -27,15 +105,15 @@ public	Plugin myinfo	=	{
 
 public void OnPluginStart()	{
 	GetGameFolderName(gamefolder, sizeof(gamefolder));
-	CreateConVar("sm_suppress_version",	PLUGIN_VERSION,	"Suppress Manager Version");
-	SuppressTeams		=	CreateConVar("sm_suppress_teams",		"0",	"Block Player Joined Team Message? \n0 = Allow Player Joined Team Message \n1 = Block Player Joined Team Message",																		_, true, 0.0, true, 1.0);
-	SuppressConnect		=	CreateConVar("sm_suppress_connect",		"0",	"Block Player Connected Message? \n0 = Allow Connect Message \n1 = Block Connect Message \n2 = Block Only Bot Connect Message \n3 = Block Only Player Connect Message",					_, true, 0.0, true, 3.0);
-	SuppressDisconnect	=	CreateConVar("sm_suppress_disconnect",	"0",	"Block Player Disconnect Message? \n0 = Allow Disconnect Message \n1 = Block Disconnect Message \n2 = Block Only Bot Disconnect Message \n3 = Block Only Player Disconnect Message",	_, true, 0.0, true, 3.0);
-	SuppressKillfeed	=	CreateConVar("sm_suppress_killfeed",	"0",	"Block Player Killfeed? \n0 = Allow Killfeed \n1 = Block Killfeed",																														_, true, 0.0, true, 1.0);
-	SuppressNameChange	=	CreateConVar("sm_suppress_namechange",	"0",	"Block Player Name Change Message? \n0 = Allow Player Name Change Message \n1 = Block Player Name Change Message",																		_, true, 0.0, true, 1.0);
-	SuppressAchievement	=	CreateConVar("sm_suppress_achievement",	"0",	"Block Player Achievement Get Message? \n0 = Allow Player Achievement Get Message \n1 = Block Player Achievement Get Message",															_, true, 0.0, true, 1.0);
-	SuppressCvar		=	CreateConVar("sm_suppress_cvar",		"0",	"Block Cvar Has Changed To Message? \n0 = Allow Cvar Has Changed To Message \n1 = Block Cvar Has Changed To Message",																	_, true, 0.0, true, 1.0);
-	SuppressChat		=	CreateConVar("sm_suppress_chat",		"0",	"Block Player Chat Messages? \0 = Allow Chat Messages \n1 = Disable Public Chat \n2 = Disable Team Chat \n3 = Disable Public and Team Chat",											_, true, 0.0, true, 3.0);
+	CreateConVar("sm_suppress_version",	PLUGIN_VERSION,	"Suppress Manager Version", FCVAR_DONTRECORD|FCVAR_SPONLY);
+	SuppressTeams		= CreateConVar("sm_suppress_teams",			"0",	"Block Player Joined Team Message? \n0 = Enable Player Joined Team Message \n1 = Block Player Joined Team Message.", _, true, 0.0, true, 1.0);
+	SuppressConnect		= CreateConVar("sm_suppress_connect",		"0",	"Block Player Connected Message? \n0 = Enable Connect Message \n1 = Block Connect Message \n2 = Block Only Bot Connect Message \n3 = Block Only Player Connect Message", _, true, 0.0, true, 3.0);
+	SuppressDisconnect	= CreateConVar("sm_suppress_disconnect",	"0",	"Block Player Disconnect Message? \n0 = Enable Disconnect Message \n1 = Block Disconnect Message \n2 = Block Only Bot Disconnect Message \n3 = Block Only Player Disconnect Message", _, true, 0.0, true, 3.0);
+	SuppressKillfeed	= CreateConVar("sm_suppress_killfeed",		"0",	"Block Player Killfeed? \n0 = Enable Killfeed \n1 = Block Killfeed", _, true, 0.0, true, 1.0);
+	SuppressNameChange	= CreateConVar("sm_suppress_namechange",	"0",	"Block Player Name Change Message? \n0 = Enable Player Name Change Message \n1 = Block Player Name Change Message", _, true, 0.0, true, 1.0);
+	SuppressAchievement	= CreateConVar("sm_suppress_achievement",	"0",	"Block Player Achievement Get Message? \n0 = Enable Player Achievement Get Message \n1 = Block Player Achievement Get Message", _, true, 0.0, true, 1.0);
+	SuppressCvar		= CreateConVar("sm_suppress_cvar",			"0",	"Block Cvar Has Changed To Message? \n0 = Enable Cvar Has Changed To Message \n1 = Block Cvar Has Changed To Message", _, true, 0.0, true, 1.0);
+	SuppressChat		= CreateConVar("sm_suppress_chat",			"0",	"Block Player Chat Messages? \0 = Enable Chat Messages \n1 = Disable Public Chat \n2 = Disable Team Chat \n3 = Disable Public and Team Chat", _, true, 0.0, true, 3.0);
 	HookUserMessage(GetUserMessageId("SayText2"), suppress_NameChange, true);
 	HookEvent("player_team",				suppress_Teams,			EventHookMode_Pre);
 	HookEvent("player_connect",				suppress_Connect,		EventHookMode_Pre);
@@ -45,9 +123,12 @@ public void OnPluginStart()	{
 	HookEvent("server_cvar",				suppress_Cvar,			EventHookMode_Pre);
 	//Check game version
 	switch(GetEngineVersion())	{
-		case Engine_CSS:	{	//Counter-Strike: Source
+		case	Engine_CSS, Engine_Contagion:	{	//Counter-Strike: Source, Contagion.
 			HookEvent("player_connect_client",		suppress_Connect,		EventHookMode_Pre);
 			HookEvent("achievement_event",			suppress_Achievement,	EventHookMode_Pre);
+		}
+		case	Engine_SDK2013, Engine_HL2DM:	{	//Source SDK Base 2013, Half-Life 2: Deathmatch
+			HookEvent("player_connect_client",		suppress_Connect,		EventHookMode_Pre);
 		}
 		case Engine_TF2:	{	//Team Fortress 2
 			HookEvent("player_connect_client",	suppress_Connect,		EventHookMode_Pre);
@@ -69,8 +150,6 @@ public void OnPluginStart()	{
 			SuppressVoiceSubTitles	=	CreateConVar("sm_suppress_voicesubtitles",	"0",	"Block Player Voice Subtitles?",					_, true, 0.0, true, 1.0);
 		}
 	}
-	AddCommandListener(SuppressChatCallback,	"say");
-	AddCommandListener(SuppressChatCallback,	"say_team");
 	AutoExecConfig(true, "sm_suppress_manager");
 }
 
@@ -81,14 +160,36 @@ Action suppress_Cvar(Event event, const char[] name, bool dontBroadcast)	{
 }
 //Player has joined team Event
 Action suppress_Teams(Event event, const char[] name, bool dontBroadcast)	{
-	if(SuppressTeams.BoolValue)
-		event.BroadcastDisabled = true;
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	
+	if(!IsValidClient(client))
+		return	Plugin_Handled;
+	
+	switch(SuppressTeams.IntValue)	{
+		case	Suppress_Disabled:	event.BroadcastDisabled = false;
+		case	Suppress_Enabled:	event.BroadcastDisabled = true;
+		case	Suppress_BlockOnlyBots:	{
+			if(IsFakeClient(client))
+				event.BroadcastDisabled = true;
+			else if(!IsFakeClient(client))
+				event.BroadcastDisabled = false;
+		}
+		case	Suppress_BlockOnlyPlayers:	{
+			if(!IsFakeClient(client))
+				event.BroadcastDisabled = true;
+			else if(!IsFakeClient(client))
+				event.BroadcastDisabled = false;
+		}
+	}
+	return	Plugin_Continue;
 }
 //Connect Event
 Action suppress_Connect(Event event, const char[] name, bool dontBroadcast)	{
 	switch(SuppressConnect.IntValue)	{
-		case	1,2,3:	event.BroadcastDisabled =true;
-		default:	event.BroadcastDisabled = false;
+		case	Suppress_Disabled:	event.BroadcastDisabled = false;
+		case	Suppress_Enabled,
+				Suppress_BlockOnlyBots,
+				Suppress_BlockOnlyPlayers:	event.BroadcastDisabled = true;
 	}
 }
 public void OnClientAuthorized(int client)	{
@@ -96,40 +197,41 @@ public void OnClientAuthorized(int client)	{
 		return;
 	
 	switch(SuppressConnect.IntValue)	{
-		case	2:	{
+		case	Suppress_BlockOnlyBots:	{
 			if(!IsFakeClient(client))
 				PrintToChatAll("%N has joined the game", client);
 		}
-		case	3:	{
+		case	Suppress_BlockOnlyPlayers:	{
 			if(IsFakeClient(client))
 				PrintToChatAll("%N has joined the game", client);
 		}
 	}
 }
+
 //Disconnect Event
 Action suppress_Disconnect(Event event, const char[] name, bool dontBroadcast)	{
-	int		client	=	GetClientOfUserId(event.GetInt("userid"));
-	char	reason[1024];
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	char reason[256];
 	event.GetString("reason", reason, sizeof(reason));
 	
 	if(!IsValidClient(client))
 		return	Plugin_Handled;	//Quits the process, thus saving some time for the dedicated server process.
 	
 	switch(SuppressDisconnect.IntValue)	{
-		case	1:	event.BroadcastDisabled = true;
-		case	2:	{
+		case	Suppress_Enabled:	event.BroadcastDisabled = true;
+		case	Suppress_BlockOnlyBots:	{
 			if(!IsFakeClient(client))	{
 				event.BroadcastDisabled = true;
 				PrintToChatAll("%N has left the game (%s)", client, reason);
 			}
 		}
-		case	3:	{
+		case	Suppress_BlockOnlyPlayers:	{
 			if(IsFakeClient(client))	{
 				event.BroadcastDisabled = true;
 				PrintToChatAll("%N has left the game (%s)", client, reason);
 			}
 		}
-		default:	event.BroadcastDisabled = false;
+		case	Suppress_Disabled:	event.BroadcastDisabled = false;
 	}
 	return Plugin_Handled;
 }
@@ -153,8 +255,8 @@ Action suppress_Annotation(Event event,	const char[] name,	bool dontBroadcast)	{
 	if(SuppressAnnotation.BoolValue)
 		event.BroadcastDisabled = true;
 }
-//Voice subtitles Event || Credits GORRageBoy
-Action	suppress_NameChange(UserMsg msg_id, Handle bf, const players[], int playersNum, bool reliable, bool init)	{
+//Name change Event || Credits GORRageBoy
+Action suppress_NameChange(UserMsg msg_id, Handle read, const players[], int playersNum, bool reliable, bool init)	{
 	if(SuppressNameChange.BoolValue)	{
 		if(!reliable)
 			return Plugin_Continue;
@@ -162,14 +264,14 @@ Action	suppress_NameChange(UserMsg msg_id, Handle bf, const players[], int playe
 		char buffer[25];
 		switch(GetUserMessageType())	{
 			case	UM_Protobuf:	{
-				PbReadString(bf, "msg_name", buffer, sizeof(buffer));
+				view_as<Protobuf>(read).ReadString("msg_name", buffer, sizeof(buffer));
 				if(StrContains(buffer, "Name_Change", false) != -1)
 					return Plugin_Handled;
 			}
 			case	UM_BitBuf:	{
-				BfReadChar(bf);
-				BfReadChar(bf);
-				BfReadString(bf, buffer, sizeof(buffer));
+				view_as<BfRead>(read).ReadChar();
+				view_as<BfRead>(read).ReadChar();
+				view_as<BfRead>(read).ReadString(buffer, sizeof(buffer));
 	
 				if(StrContains(buffer, "Name_Change", false) != -1)
 					return Plugin_Handled;
@@ -178,54 +280,62 @@ Action	suppress_NameChange(UserMsg msg_id, Handle bf, const players[], int playe
 	}
 	return Plugin_Continue;
 }
-//Name change Event || Credits Bacardi
-Action	suppress_VoiceSubTitles(UserMsg msg_id, BfRead bf, const players[], int playersNum, bool reliable, bool init)	{
+//Voice Subtitles Event || Credits Bacardi
+Action suppress_VoiceSubTitles(UserMsg msg_id, BfRead bf, const players[], int playersNum, bool reliable, bool init)	{
 	int		clientid	=	bf.ReadByte(),
 			voicemenu1	=	bf.ReadByte(),
 			voicemenu2	=	bf.ReadByte();
 	if(SuppressVoiceSubTitles.BoolValue)	{
 		if(IsValidClient(clientid, true))	{
-			if(voicemenu1 == 0)	{
-				switch(voicemenu2)	{
-					case	0, 1, 2, 3, 4, 5, 6, 7: return Plugin_Handled;
+			switch(voicemenu1)	{
+				case	0:	{
+					switch(voicemenu2)	{
+						case	0, 1, 2, 3, 4, 5, 6, 7:	return	Plugin_Handled;
+					}
+				}
+				case	1:	{
+					switch(voicemenu2)	{
+						case	0, 1, 2, 6:	return	Plugin_Handled;
+					}
+				}
+				case	2:	{
+					if(voicemenu2 == 0)
+						return	Plugin_Handled;
 				}
 			}
-			if(voicemenu1 == 1)	{
-				switch(voicemenu2)	{
-					case	0, 1, 2, 6: return Plugin_Handled;
-				}
-			}
-			if(voicemenu1 == 2 && voicemenu2 == 0)
-				return Plugin_Handled;
-		}
-	}
-	return Plugin_Continue;
-}
-
-Action	SuppressChatCallback(int client,	const char[] command,	int args)	{
-	if(StrEqual(command, "say", false))	{
-		switch(SuppressChat.IntValue)	{
-			case	0:	return	Plugin_Continue;
-			case	1:	return	Plugin_Handled;
-			case	2:	return	Plugin_Continue;
-			case	3:	return	Plugin_Handled;
-		}
-	}
-	if(StrEqual(command, "say_Team", false))	{
-		switch(SuppressChat.IntValue)	{
-			case	0:	return	Plugin_Continue;
-			case	1:	return	Plugin_Continue;
-			case	2:	return	Plugin_Handled;
-			case	3:	return	Plugin_Handled;
 		}
 	}
 	return	Plugin_Continue;
 }
 
-bool	IsValidClient(int client, bool CheckAlive=false)	{
-	if(!IsClientInGame(client))
+public Action OnClientSayCommand(int client, const char[] command)	{
+	if(StrEqual(command, "say", false))	{
+		switch(SuppressChat.IntValue)	{
+			case	Suppress_Disabled:			return	Plugin_Continue;
+			case	Suppress_Enabled:			return	Plugin_Handled;
+			case	Suppress_BlockOnlyBots:		return	Plugin_Continue;
+			case	Suppress_BlockOnlyPlayers:	return	Plugin_Handled;
+		}
+	}
+	if(StrEqual(command, "say_team", false))	{
+		switch(SuppressChat.IntValue)	{
+			case	Suppress_Disabled:			return	Plugin_Continue;
+			case	Suppress_Enabled:			return	Plugin_Continue;
+			case	Suppress_BlockOnlyBots:		return	Plugin_Handled;
+			case	Suppress_BlockOnlyPlayers:	return	Plugin_Handled;
+		}
+	}
+	return	Plugin_Continue;
+}
+
+bool IsValidClient(int client, bool CheckAlive=false)	{
+	if(client == 0)
 		return	false;
 	if(client < 1 || client > MaxClients)
+		return	false;
+	if(!IsClientInGame(client))
+		return	false;
+	if(!IsClientConnected(client))
 		return	false;
 	if(IsClientReplay(client))
 		return	false;
