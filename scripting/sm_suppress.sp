@@ -1,25 +1,29 @@
 #include	<suppress_manager>
+#undef REQUIRE_PLUGIN
+#tryinclude	<updater>
+#define REQUIRE_PLUGIN
 
 #pragma		semicolon	1
 #pragma		newdecls	required
 
-#define		PLUGIN_VERSION "0.7.0"
+#define PLUGIN_VERSION "0.7.1"
+#define PluginUrl "https://raw.githubusercontent.com/Teamkiller324/Suppress-Manager/main/SupressManagerUpdater.txt"
 
-char		gamefolder[64];
+char	gamefolder[64];
 
-ConVar		SuppressTeams,
-			SuppressConnect,
-			SuppressDisconnect,
-			SuppressKillfeed,
-			SuppressWinPanel,
-			SuppressAchievement,
-			SuppressAnnotation,
-			SuppressNameChange,
-			SuppressVoiceSubTitles,
-			SuppressCvar,
-			SuppressChat;
+ConVar	SuppressTeams,
+		SuppressConnect,
+		SuppressDisconnect,
+		SuppressKillfeed,
+		SuppressWinPanel,
+		SuppressAchievement,
+		SuppressAnnotation,
+		SuppressNameChange,
+		SuppressVoiceSubTitles,
+		SuppressCvar,
+		SuppressChat;
 
-public	APLRes	AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)	{
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)	{
 	CreateNative("SuppressManager_IsTeamJoinMsgBlocked",		Native_IsTeamJoinMsgBlocked);
 	CreateNative("SuppressManager_IsConnectMsgBlocked",			Native_IsConnectMsgBlocked);
 	CreateNative("SuppressManager_IsDisconnectMsgBlocked",		Native_IsDisconnectMsgBlocked);
@@ -35,67 +39,19 @@ public	APLRes	AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return	APLRes_Success;
 }
 
-int Native_IsTeamJoinMsgBlocked(Handle plugin, int params)	{
-	if(SuppressTeams.BoolValue)
-		return	true;
-	return	false;
-}
+any Native_IsTeamJoinMsgBlocked(Handle plugin, int params)			{	return	SuppressTeams.BoolValue;			}
+any Native_IsConnectMsgBlocked(Handle plugin, int params)			{	return	SuppressConnect.IntValue;			}
+any Native_IsDisconnectMsgBlocked(Handle plugin, int params)		{	return	SuppressDisconnect.IntValue;		}
+any Native_IsKillfeedBlocked(Handle plugin, int params)				{	return	SuppressKillfeed.BoolValue;			}
+any Native_TF2_IsWinpanelBlocked(Handle plugin, int params)			{	return	SuppressWinPanel.BoolValue;			}
+any Native_IsAchievementsBlocked(Handle plugin, int params)			{	return	SuppressAchievement.BoolValue;		}
+any Native_TF2_IsAnnotationsBlocked(Handle plugin, int params)		{	return	SuppressAnnotation.BoolValue;		}
+any Native_IsNameChangeBlocked(Handle plugin, int params)			{	return	SuppressNameChange.BoolValue;		}
+any Native_TF2_IsVoiceSubTitlesBlocked(Handle plugin, int params)	{	return	SuppressVoiceSubTitles.BoolValue;	}
+any Native_IsServerCvarChangesBlocked(Handle plugin, int params)	{	return	SuppressCvar.BoolValue;				}
+any Native_IsChatMessagesBlocked(Handle plugin, int params)			{	return	SuppressChat.IntValue;				}
 
-int Native_IsConnectMsgBlocked(Handle plugin, int params)	{
-	return	SuppressConnect.IntValue;
-}
-
-int Native_IsDisconnectMsgBlocked(Handle plugin, int params)	{
-	return	SuppressDisconnect.IntValue;
-}
-
-int Native_IsKillfeedBlocked(Handle plugin, int params)	{
-	if(SuppressKillfeed.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_TF2_IsWinpanelBlocked(Handle plugin, int params)	{
-	if(SuppressWinPanel.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_IsAchievementsBlocked(Handle plugin, int params)	{
-	if(SuppressAchievement.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_TF2_IsAnnotationsBlocked(Handle plugin, int params)	{
-	if(SuppressAnnotation.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_IsNameChangeBlocked(Handle plugin, int params)	{
-	if(SuppressNameChange.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_TF2_IsVoiceSubTitlesBlocked(Handle plugin, int params)	{
-	if(SuppressVoiceSubTitles.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_IsServerCvarChangesBlocked(Handle plugin, int params)	{
-	if(SuppressCvar.BoolValue)
-		return	true;
-	return	false;
-}
-
-int Native_IsChatMessagesBlocked(Handle plugin, int params)	{
-	return	SuppressChat.IntValue;
-}
-
-public	Plugin myinfo	=	{
+public Plugin myinfo = {
 	name		=	"[ANY] Suppress Manager",
 	author		=	"Tk /id/Teamkiller324",
 	description	=	"Blocks specific messages & outputs from showing.",
@@ -127,9 +83,8 @@ public void OnPluginStart()	{
 			HookEvent("player_connect_client",		suppress_Connect,		EventHookMode_Pre);
 			HookEvent("achievement_event",			suppress_Achievement,	EventHookMode_Pre);
 		}
-		case	Engine_SDK2013, Engine_HL2DM:	{	//Source SDK Base 2013, Half-Life 2: Deathmatch
-			HookEvent("player_connect_client",		suppress_Connect,		EventHookMode_Pre);
-		}
+		//Source SDK Base 2013, Half-Life 2: Deathmatch
+		case	Engine_SDK2013, Engine_HL2DM:	HookEvent("player_connect_client",		suppress_Connect,		EventHookMode_Pre);
 		case Engine_TF2:	{	//Team Fortress 2
 			HookEvent("player_connect_client",	suppress_Connect,		EventHookMode_Pre);
 			HookEvent("achievement_event",		suppress_Achievement,	EventHookMode_Pre);
@@ -151,19 +106,29 @@ public void OnPluginStart()	{
 		}
 	}
 	AutoExecConfig(true, "sm_suppress_manager");
+	
+	#if defined _updater_included
+		Updater_AddPlugin(PluginUrl);
+	#endif
 }
 
+#if defined _updater_included
+public void Updater_OnPluginUpdated()	{
+	PrintToServer("[Suppress Manager] Update was found and installed, restarting..");
+	ReloadPlugin();
+}
+#endif
+
 //Cvar has changed to Event
-Action suppress_Cvar(Event event, const char[] name, bool dontBroadcast)	{
-	if(SuppressCvar.BoolValue)
-		event.BroadcastDisabled = true;
+void suppress_Cvar(Event event, const char[] event_name, bool dontBroadcast)	{
+	event.BroadcastDisabled = SuppressCvar.BoolValue;
 }
 //Player has joined team Event
-Action suppress_Teams(Event event, const char[] name, bool dontBroadcast)	{
+void suppress_Teams(Event event, const char[] event_name, bool dontBroadcast)	{
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	
 	if(!IsValidClient(client))
-		return	Plugin_Handled;
+		return;
 	
 	switch(SuppressTeams.IntValue)	{
 		case	Suppress_Disabled:	event.BroadcastDisabled = false;
@@ -181,10 +146,9 @@ Action suppress_Teams(Event event, const char[] name, bool dontBroadcast)	{
 				event.BroadcastDisabled = false;
 		}
 	}
-	return	Plugin_Continue;
 }
 //Connect Event
-Action suppress_Connect(Event event, const char[] name, bool dontBroadcast)	{
+void suppress_Connect(Event event, const char[] event_name, bool dontBroadcast)	{
 	switch(SuppressConnect.IntValue)	{
 		case	Suppress_Disabled:	event.BroadcastDisabled = false;
 		case	Suppress_Enabled,
@@ -209,13 +173,13 @@ public void OnClientAuthorized(int client)	{
 }
 
 //Disconnect Event
-Action suppress_Disconnect(Event event, const char[] name, bool dontBroadcast)	{
+void suppress_Disconnect(Event event, const char[] name, bool dontBroadcast)	{
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	char reason[256];
 	event.GetString("reason", reason, sizeof(reason));
 	
 	if(!IsValidClient(client))
-		return	Plugin_Handled;	//Quits the process, thus saving some time for the dedicated server process.
+		return;	//Quits the process, thus saving some time for the dedicated server process.
 	
 	switch(SuppressDisconnect.IntValue)	{
 		case	Suppress_Enabled:	event.BroadcastDisabled = true;
@@ -233,27 +197,22 @@ Action suppress_Disconnect(Event event, const char[] name, bool dontBroadcast)	{
 		}
 		case	Suppress_Disabled:	event.BroadcastDisabled = false;
 	}
-	return Plugin_Handled;
 }
 //Killfeed Event
-Action suppress_Killfeed(Event event, const char[] name, bool dontBroadcast)	{
-	if(SuppressKillfeed.BoolValue)
-		event.BroadcastDisabled = true;
+void suppress_Killfeed(Event event, const char[] event_name, bool dontBroadcast)	{
+	event.BroadcastDisabled = SuppressKillfeed.BoolValue;
 }
 //Winpanel Event
-Action	suppress_WinPanel(Event event, const char[] name, bool dontBroadcast)	{
-	if(SuppressWinPanel.BoolValue)
-		event.BroadcastDisabled = true;
+void suppress_WinPanel(Event event, const char[] event_name, bool dontBroadcast)	{
+	event.BroadcastDisabled = SuppressWinPanel.BoolValue;
 }
 //Achievement get Event
-Action suppress_Achievement(Event event, const char[] name, bool dontBroadcast)	{
-	if(SuppressAchievement.BoolValue)
-		event.BroadcastDisabled = true;
+void suppress_Achievement(Event event, const char[] event_name, bool dontBroadcast)	{
+	event.BroadcastDisabled = SuppressAchievement.BoolValue;
 }
 //Annotation Event
-Action suppress_Annotation(Event event,	const char[] name,	bool dontBroadcast)	{
-	if(SuppressAnnotation.BoolValue)
-		event.BroadcastDisabled = true;
+void suppress_Annotation(Event event, const char[] event_name, bool dontBroadcast)	{
+	event.BroadcastDisabled = SuppressAnnotation.BoolValue;
 }
 //Name change Event || Credits GORRageBoy
 Action suppress_NameChange(UserMsg msg_id, Handle read, const players[], int playersNum, bool reliable, bool init)	{
@@ -282,29 +241,13 @@ Action suppress_NameChange(UserMsg msg_id, Handle read, const players[], int pla
 }
 //Voice Subtitles Event || Credits Bacardi
 Action suppress_VoiceSubTitles(UserMsg msg_id, BfRead bf, const players[], int playersNum, bool reliable, bool init)	{
-	int		clientid	=	bf.ReadByte(),
-			voicemenu1	=	bf.ReadByte(),
-			voicemenu2	=	bf.ReadByte();
+	int client = bf.ReadByte();
+	
 	if(SuppressVoiceSubTitles.BoolValue)	{
-		if(IsValidClient(clientid, true))	{
-			switch(voicemenu1)	{
-				case	0:	{
-					switch(voicemenu2)	{
-						case	0, 1, 2, 3, 4, 5, 6, 7:	return	Plugin_Handled;
-					}
-				}
-				case	1:	{
-					switch(voicemenu2)	{
-						case	0, 1, 2, 6:	return	Plugin_Handled;
-					}
-				}
-				case	2:	{
-					if(voicemenu2 == 0)
-						return	Plugin_Handled;
-				}
-			}
-		}
+		if(IsValidClient(client, true))
+			return	Plugin_Handled;
 	}
+	
 	return	Plugin_Continue;
 }
 
@@ -329,7 +272,7 @@ public Action OnClientSayCommand(int client, const char[] command)	{
 }
 
 bool IsValidClient(int client, bool CheckAlive=false)	{
-	if(client == 0)
+	if(client == 0 || client == -1)
 		return	false;
 	if(client < 1 || client > MaxClients)
 		return	false;

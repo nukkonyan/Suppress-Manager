@@ -9,6 +9,7 @@
 		
 		"Notes"	"More info @ https://github.com/Teamkiller324/Suppress-Manager"
 		"Notes"	"Added updater support."
+		"Notes"	"Cleaned up code."
 	}
 	
 	"Files"
