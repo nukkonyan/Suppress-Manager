@@ -9,6 +9,22 @@ Suppress-Manager include (To compile)
 
 [Updater](https://github.com/Teamkiller324/Updater) (To compile with updater support)
 
+## Cvars
+```
+sm_suppress_version - Suppress Manager Version
+sm_suppress_teams - Allow/Block Player Joined Team Message. Default: 0 (Allow)
+sm_suppress_connect - Allow/Block Player Connected Message. Default: 0 (Allow)
+sm_suppress_disconnect - Allow/Block Player Disconnected Message. Default: 0 (Allow)
+sm_suppress_killfeed - Allow/Block Player Killfeed. Default: 0 (Allow)
+sm_suppress_namechange - Allow/Block Player Name Change Message. Default: 0 (Allow)
+sm_suppress_achievement - Allow/Block Player Achievement Get Message [TF2]. Default: 0 (Allow)
+sm_suppress_winpanel - Allow/Block Winpanel From Showing On Win [TF2]. Default: 0 (Allow)
+sm_suppress_annotation - Allow/Block Annotation From Showing [TF2]. Default: 0 (Allow)
+sm_suppress_voicesubtitles - Allow/Block Player Voice Subtitles [TF2]. Default: 0 (Allow)
+sm_suppress_cvar - Allow/Block Cvar value has changed to Message. Default: 0 (Allow)
+sm_suppress_chat - Allow/Block chat messages. Default: 0 (Allow)
+```
+
 ## Natives
 
 ```
