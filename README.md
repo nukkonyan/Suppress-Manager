@@ -3,7 +3,7 @@ Blocks specific message &amp; outputs from showing.
 
 AlliedModders Post: https://forums.alliedmods.net/showthread.php?p=2708931
 
-Latest Version: 0.7.1
+### Latest Version: 0.7.1
 
 ## Requirements
 
