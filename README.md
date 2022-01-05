@@ -7,9 +7,9 @@ AlliedModders Post: https://forums.alliedmods.net/showthread.php?p=2708931
 
 ## Requirements
 
-Suppress-Manager include (To compile)
+### Suppress-Manager include (To compile)
 
-[Updater](https://github.com/Teamkiller324/Updater) (To compile with updater support)
+### [Updater](https://github.com/Teamkiller324/Updater) (To compile with updater support)
 
 ## Cvars
 ```
